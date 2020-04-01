@@ -1,3 +1,5 @@
 newsapi-python
 requests
 apscheduler
+flask
+flask_cors

@@ -1,7 +1,10 @@
 import tweepy as tp
 import atexit
 from config import twitter_credentials
-from apscheduler.schedulers.blocking import BlockingScheduler
+from apscheduler.schedulers.background import BackgroundScheduler
+from flask import Blueprint
+
+bot = Blueprint('bot', __name__)
 
 # Credentials
 consumer_key = twitter_credentials["api_key"]
@@ -16,10 +19,13 @@ api = tp.API(auth)
 
 def tweet():
     api.update_status("hello")
+    print("just tweeted. check account.")
+
+tweet()
 
 # Starts scheduler
-sched = BlockingScheduler()
-sched.start()
+sched = BackgroundScheduler()
 sched.add_job(func=tweet, trigger="interval", hours=7)
+sched.start()
 
 atexit.register(lambda: sched.shutdown())
