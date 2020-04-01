@@ -3,7 +3,6 @@ from newsapi import NewsApiClient
 from config import news_api_key
 import requests
 
-
 newsapi = NewsApiClient(api_key=news_api_key)
 
 # /v2/top-headlines
@@ -13,6 +12,8 @@ top_headlines = newsapi.get_top_headlines(q='coronavirus',
 
 # Get relevant data. Uses https://github.com/javieraviles/covidAPI
 covid_all = requests.get('https://coronavirus-19-api.herokuapp.com/all')
+covid_data = covid_all.json()
 
 # print(top_headlines)
 # print(covid_all.text)
+print(covid_data)
