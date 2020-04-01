@@ -20,8 +20,6 @@ def getTopHeadlines(country=None):
         return articles_to_share
     return []
     
-# print(getTopHeadlines())
-
 def getCovidWorldData():
     # Get relevant data. Uses https://github.com/javieraviles/covidAPI
     covid_all = requests.get('https://coronavirus-19-api.herokuapp.com/all')
