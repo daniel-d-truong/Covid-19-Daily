@@ -3,3 +3,6 @@ requests
 apscheduler
 flask
 flask_cors
+bs4
+lxml
+html5lib

@@ -3,6 +3,7 @@ import atexit
 from config import twitter_credentials
 from apscheduler.schedulers.background import BackgroundScheduler
 from flask import Blueprint
+from twitter.create_tweet import format_tweet
 
 bot = Blueprint('bot', __name__)
 
@@ -18,7 +19,8 @@ auth.set_access_token(access_token, access_secret)
 api = tp.API(auth)
 
 def tweet():
-    api.update_status("hello")
+    tweet_format = format_tweet()
+    api.update_status(tweet_format)
     print("just tweeted. check account.")
 
 tweet()
