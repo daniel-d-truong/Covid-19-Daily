@@ -1,9 +1,14 @@
 from flask import Flask
 from flask_cors import CORS
 from twitter.botscript import bot
+from data import data
+from news import news
 
 app = Flask(__name__)
+
 app.register_blueprint(bot, url_prefix="/bot")
+app.register_blueprint(data, url_prefix="/data")
+app.register_blueprint(news, url_prefix="/news")
 
 CORS(app)
 

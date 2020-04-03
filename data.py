@@ -1,46 +1,12 @@
-# Get relevant news
-from newsapi import NewsApiClient
-from config import news_api_key
 from bs4 import BeautifulSoup
+from flask import Blueprint, request
+from apscheduler.schedulers.background import BackgroundScheduler
+import atexit
 import requests
 
-newsapi = NewsApiClient(api_key=news_api_key)
 live_data = {}
 yday_data = {}
-
-def invalidSource(article):
-    invalid_sources = ["youtube.com"]
-    return article["source"]["id"] == None or article["source"]["name"] in invalid_sources
-
-def getTopHeadlines(country=None, amount=2):
-    # /v2/top-headlines
-    top_headlines = newsapi.get_top_headlines(q='coronavirus',
-                                              category='health',
-                                              language='en',
-                                              country=country)
-
-    if top_headlines["status"] == "ok":
-        # Chooses most important headlines using "ML"
-        articles_list = top_headlines["articles"]
-        articles_iter = iter(articles_list)
-        
-        # Filter article list
-        idx_to_del = []
-        for i in range(0, len(articles_list)):
-            art = articles_list[i]
-            if invalidSource(art): idx_to_del.append(i)
-
-        counter = 0
-        for i in idx_to_del:
-            idx = i - counter
-            del articles_list[idx]
-            counter = counter + 1
-
-        machine_learning = articles_list[0:amount]
-
-        articles_to_share = list(map(lambda i: i["url"], machine_learning))
-        return articles_to_share
-    return []
+data = Blueprint('data', __name__)
 
 def getRowsInScrapedData(html_tree, storage):
     col_order = ("region", "total_cases", "new_cases", "total_deaths", "new_deaths", "total_recovered", "active_cases", "serious_critical", "total_per_million", "deaths_per_million")
@@ -80,21 +46,20 @@ def webScrapeData(get_yesterday = False):
         getRowsInScrapedData(yday_info, yday_data)
 
 
+# TODO: Check trends with the day before to check whether we are exponentiall growing or not
 # def compareRateWithYesterday():
 
-
-def getCovidWorldData():
-    # Get relevant data. Uses https://github.com/javieraviles/covidAPI
-    # covid_all = requests.get('https://coronavirus-19-api.herokuapp.com/all')
-    data = live_data["total"]
-    print(live_data["total"])
-    print(yday_data["total"])
+def getCovidData(country='total', yday=False):
+    # if country value passed in is "all", then return all the data
+    if country == "all":
+        return live_data
+    data = live_data[country]
+    if yday:
+        data = yday_data[country]
     return data
-
-def getCovidCountryData(country=''):
-    covid_data = requests.get('https://coronavirus-19-api.herokuapp.com/countries/{}'.format(country))
-    try: return covid_data.json()
-    except: return {}
+    # covid_data = requests.get('https://coronavirus-19-api.herokuapp.com/countries/{}'.format(country))
+    # try: return covid_data.json()
+    # except: return {}
 
 def getCovidStatesData(state=None):
     covid_data = requests.get('https://corona.lmao.ninja/states')
@@ -103,7 +68,27 @@ def getCovidStatesData(state=None):
     except:
         return "Unable to fetch from the API"
 
-webScrapeData(get_yesterday=True)
-getCovidWorldData()
+@data.route('/<country>', methods=['GET'])
+def get_data(country):
+    yday_status = request.args.get('day')
 
-print(getTopHeadlines())
+    # Can probably write this better
+    if yday_status == None:
+        return getCovidData(country=country)
+    else:
+        yday_status = True if yday_status=="yday" else False
+        return getCovidData(country=country, yday=yday_status)
+
+@data.route('/', methods=['GET'])
+def get_data_world():
+    return getCovidData()
+
+webScrapeData(get_yesterday=True)
+
+# Starts scheduler
+sched = BackgroundScheduler({'apscheduler.timezone': 'America/Los_Angeles'})
+sched.add_job(func=webScrapeData, trigger="interval", minutes=3)
+sched.add_job(func=lambda: webScrapeData(get_yesterday=True), trigger="cron", hour=23, minute=30)
+sched.start()
+
+atexit.register(lambda: sched.shutdown())
