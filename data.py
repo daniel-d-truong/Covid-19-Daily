@@ -8,6 +8,10 @@ newsapi = NewsApiClient(api_key=news_api_key)
 live_data = {}
 yday_data = {}
 
+def invalidSource(article):
+    invalid_sources = ["youtube.com"]
+    return article["source"]["id"] == None or article["source"]["name"] in invalid_sources
+
 def getTopHeadlines(country=None, amount=2):
     # /v2/top-headlines
     top_headlines = newsapi.get_top_headlines(q='coronavirus',
@@ -17,7 +21,23 @@ def getTopHeadlines(country=None, amount=2):
 
     if top_headlines["status"] == "ok":
         # Chooses most important headlines using "ML"
-        machine_learning = top_headlines["articles"][0:amount]
+        articles_list = top_headlines["articles"]
+        articles_iter = iter(articles_list)
+        
+        # Filter article list
+        idx_to_del = []
+        for i in range(0, len(articles_list)):
+            art = articles_list[i]
+            if invalidSource(art): idx_to_del.append(i)
+
+        counter = 0
+        for i in idx_to_del:
+            idx = i - counter
+            del articles_list[idx]
+            counter = counter + 1
+
+        machine_learning = articles_list[0:amount]
+
         articles_to_share = list(map(lambda i: i["url"], machine_learning))
         return articles_to_share
     return []
@@ -85,3 +105,5 @@ def getCovidStatesData(state=None):
 
 webScrapeData(get_yesterday=True)
 getCovidWorldData()
+
+print(getTopHeadlines())
