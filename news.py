@@ -14,15 +14,17 @@ def invalidSource(article):
 
     name = article["source"]["name"].lower()
     if name in valid_sources: return False
-    return article["source"]["id"] == None or name in invalid_sources
+    return name in invalid_sources
 
 def getTopHeadlines(country=None, amount=2, query=None):
     # /v2/top-headlines
     query_item = ''
     if query != None: 
         query_item = ', {}'.format(query)
+
+    # TODO: Make this more robust to actually display the most important articles.
     top_headlines = newsapi.get_top_headlines(q='coronavirus{}'.format(query_item),
-                                              category='health',
+                                            #   category='health',
                                               language='en',
                                               country=country)
 
@@ -34,13 +36,10 @@ def getTopHeadlines(country=None, amount=2, query=None):
         idx_to_del = []
         for i in range(0, len(articles_list)):
             art = articles_list[i]
-            if invalidSource(art): idx_to_del.append(i)
+            if invalidSource(art): idx_to_del.insert(0, i)
 
-        counter = 0
         for i in idx_to_del:
-            idx = i - counter
-            del articles_list[idx]
-            counter = counter + 1
+            del articles_list[i]
 
         machine_learning = articles_list[0:amount]
 

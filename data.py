@@ -3,13 +3,16 @@ from flask import Blueprint, request
 from apscheduler.schedulers.background import BackgroundScheduler
 import atexit
 import requests
+import logging
 
+logging.basicConfig()
 live_data = {}
 yday_data = {}
 data = Blueprint('data', __name__)
 
 def getRowsInScrapedData(html_tree, storage):
-    col_order = ("region", "total_cases", "new_cases", "total_deaths", "new_deaths", "total_recovered", "active_cases", "serious_critical", "total_per_million", "deaths_per_million")
+    # TODO: Make this column aspect dynamic since website is always changing.
+    col_order = ("region", "total_cases", "new_cases", "total_deaths", "new_deaths", "total_recovered", "active_cases", "serious_critical", "total_per_million", "deaths_per_million", "total_tests", "tests_per_million_pop")
     tbody_tags = html_tree.find('div').find('table').findAll('tbody')
 
     def setTableColData(row):
@@ -36,6 +39,7 @@ def getRowsInScrapedData(html_tree, storage):
     
 def webScrapeData(get_yesterday = False):
     # TODO: WOrk this with US States as well
+    print("data web scraped")
     page = requests.get('https://www.worldometers.info/coronavirus/')
     soup = BeautifulSoup(page.content, 'html5lib')
     today_info = soup.find('div', attrs = {'id':'nav-today'})
@@ -88,7 +92,7 @@ webScrapeData(get_yesterday=True)
 
 # Starts scheduler
 sched = BackgroundScheduler({'apscheduler.timezone': 'America/Los_Angeles'})
-sched.add_job(func=webScrapeData, trigger="interval", minutes=3)
+sched.add_job(func=webScrapeData, trigger="interval", minutes=1)
 sched.add_job(func=lambda: webScrapeData(get_yesterday=True), trigger="cron", hour=23, minute=30)
 sched.start()
 
