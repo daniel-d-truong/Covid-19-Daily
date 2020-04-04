@@ -19,7 +19,8 @@ def getRowsInScrapedData(html_tree, storage):
         for col in row.findAll('td'):
             col_name = next(col_iter)
             try:
-                area_info[col_name] = float(col.text) if col.text != "" else 0
+                text = col.text.replace(" ", "").replace(",", "")
+                area_info[col_name] = float(text if text!="" else 0)
             except:
                 # Deal with the encoding later
                 area_info[col_name] = col.text.encode('utf8').lower().replace(":", "")
