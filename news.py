@@ -3,6 +3,7 @@ from newsapi import NewsApiClient
 from config import news_api_key
 from flask import Blueprint, request
 import json
+import datetime
 
 newsapi = NewsApiClient(api_key=news_api_key)
 news = Blueprint('news', __name__)
@@ -19,18 +20,33 @@ def invalidSource(article):
 def getTopHeadlines(country=None, amount=2, query=None):
     # /v2/top-headlines
     query_item = ''
+    country_item = ''
     if query != None: 
         query_item = ', {}'.format(query)
+    if country != None:
+        country_item = ', {}'.format(country)
 
     # TODO: Make this more robust to actually display the most important articles.
-    top_headlines = newsapi.get_top_headlines(q='coronavirus{}'.format(query_item),
+    top_headlines = newsapi.get_top_headlines(q='coronavirus, covid{}, {}'.format(query_item, country_item),
                                             #   category='health',
-                                              language='en',
-                                              country=country)
+                                              language='en')
+                                            #   country=country_item)
+
+    # idea, if there are no top_headlines, resort to using ALL ARTICLES
 
     if top_headlines["status"] == "ok":
         # Chooses most important headlines using "ML"
         articles_list = top_headlines["articles"]
+        if len(articles_list) == 0:
+            today = datetime.date.today()
+            yday = today - datetime.timedelta(days=1)
+
+            news_articles = newsapi.get_everything(q='coronavirus, covid{},{}'.format(query_item, country_item),
+                                                   from_param=yday,
+                                                   sort_by="relevancy",
+                                                   language="en")
+            if news_articles["status"] == "ok":
+                articles_list = news_articles["articles"]
 
         # Filter article list
         idx_to_del = []
@@ -52,11 +68,16 @@ def extract_urls(articles):
 @news.route('/', methods=['GET'])
 def get_news():
     query = None
+    country = None
     if "q" in request.args:
         query = request.args.get("q")
-        print(query)
+        print("q = " + query)
 
-    articles = getTopHeadlines(query=query)
+    if "c" in request.args:
+        country = request.args.get("c")
+        print("c = " + country)
+
+    articles = getTopHeadlines(country=country, query=query)
     # print(articles)
     return {
         'urls': extract_urls(articles),

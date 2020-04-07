@@ -51,6 +51,9 @@ def webScrapeData(get_yesterday = False):
         getRowsInScrapedData(yday_info, yday_data)
 
 
+# TODO: Grab data from either the Hopkins dataset or the Google Big QUERY API.
+
+
 # TODO: Check trends with the day before to check whether we are exponentiall growing or not
 # def compareRateWithYesterday():
 
