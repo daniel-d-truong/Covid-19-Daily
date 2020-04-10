@@ -26,11 +26,15 @@ def getTopHeadlines(country=None, amount=2, query=None):
     if country != None:
         country_item = ', {}'.format(country)
 
-    # TODO: Make this more robust to actually display the most important articles.
+    # Checks if country is only one word
+    # if len(country.split(" ")) == 1 and country != "world":
+    #     top_headlines = newsapi.get_top_headlines(q='coronavirus, covid',
+    #                                               language='en',
+    #                                               country=country)
     top_headlines = newsapi.get_top_headlines(q='coronavirus, covid{}, {}'.format(query_item, country_item),
-                                            #   category='health',
-                                              language='en')
-                                            #   country=country_item)
+                                                #   category='health',
+                                                language='en')
+                                            #   country=country_item) # issue is that the news api only takes in certain country names
 
     # idea, if there are no top_headlines, resort to using ALL ARTICLES
 

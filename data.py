@@ -12,7 +12,7 @@ data = Blueprint('data', __name__)
 
 def getRowsInScrapedData(html_tree, storage):
     # TODO: Make this column aspect dynamic since website is always changing.
-    col_order = ("region", "total_cases", "new_cases", "total_deaths", "new_deaths", "total_recovered", "active_cases", "serious_critical", "total_per_million", "deaths_per_million", "total_tests", "tests_per_million_pop")
+    col_order = ("region", "total_cases", "new_cases", "total_deaths", "new_deaths", "total_recovered", "active_cases", "serious_critical", "total_per_million", "deaths_per_million", "total_tests", "tests_per_million_pop", "continent")
     tbody_tags = html_tree.find('div').find('table').findAll('tbody')
 
     def setTableColData(row):
@@ -20,7 +20,12 @@ def getRowsInScrapedData(html_tree, storage):
         col_iter = iter(col_order) 
 
         for col in row.findAll('td'):
-            col_name = next(col_iter)
+            try:
+                col_name = next(col_iter)
+            except: 
+                break
+
+
             try:
                 text = col.text.replace(" ", "").replace(",", "")
                 area_info[col_name] = float(text if text!="" else 0)
