@@ -1,17 +1,18 @@
 import tweepy as tp
 import atexit
-from config import twitter_credentials, bot_request_credentials
+# from config import twitter_credentials, bot_request_credentials
 from apscheduler.schedulers.background import BackgroundScheduler
 from flask import Blueprint, request
 from twitter.create_tweet import format_tweet
+import os 
 
 bot = Blueprint('bot', __name__)
 
 # Credentials
-consumer_key = twitter_credentials["api_key"]
-consumer_secret = twitter_credentials["api_secret_key"]
-access_token = twitter_credentials["access_token"]
-access_secret = twitter_credentials["access_secret_token"]
+consumer_key = os.environ.get("API_KEY")
+consumer_secret = os.environ.get("API_SECRET_KEY")
+access_token = os.environ.get("ACCESS_TOKEN")
+access_secret = os.environ.get("ACCESS_SECRET_TOKEN")
 
 # login to twitter account api
 auth = tp.OAuthHandler(consumer_key, consumer_secret)
@@ -40,7 +41,7 @@ def post_tweet():
         user = json_req['id']
         pw = json_req['password']
 
-        if user != bot_request_credentials['bot_username'] or pw != bot_request_credentials['bot_password']:
+        if user != os.environ.get('BOT_USERNAME') or pw != os.environ.get('BOT_PASSWORD'):
             raise Exception("Credentials passed in are incorrect. Check them again. ")
 
         return "Just tweeted. " if tweet() else "Tweet failed. Check debug messages. "

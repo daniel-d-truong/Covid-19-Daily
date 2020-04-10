@@ -1,11 +1,12 @@
 # Get relevant news
 from newsapi import NewsApiClient
-from config import news_api_key
+# from config import news_api_key
 from flask import Blueprint, request
 import json
 import datetime
+import os
 
-newsapi = NewsApiClient(api_key=news_api_key)
+newsapi = NewsApiClient(api_key=os.environ.get('NEWS_API_KEY'))
 news = Blueprint('news', __name__)
 
 
