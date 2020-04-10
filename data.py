@@ -31,7 +31,7 @@ def getRowsInScrapedData(html_tree, storage):
                 area_info[col_name] = float(text if text!="" else 0)
             except:
                 # Deal with the encoding later
-                area_info[col_name] = col.text.encode('utf8').lower().replace(":", "")
+                area_info[col_name] = col.text.lower().replace(":", "")
 
         region = area_info.pop("region")
         storage[region] = area_info  
