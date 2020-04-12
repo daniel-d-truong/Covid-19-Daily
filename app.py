@@ -18,5 +18,5 @@ CORS(app)
 def main():
     return "Hello world"
 
-app.run()
-print("app run")
+if __name__ == '__main__':
+    app.run()
