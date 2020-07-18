@@ -9,10 +9,28 @@ logging.basicConfig()
 live_data = {}
 yday_data = {}
 data = Blueprint('data', __name__)
+key_map = {
+    "country,other": "region",
+    "totalcases": "total_cases",
+    "newcases": "new_cases",
+    "totaldeaths": "total_deaths",
+    "totalrecovered": "total_recovered",
+    "newrecovered": "new_recovered",
+    "activecases": "active_cases",
+    "serious,critical": "serious_critical",
+    "tot\xa0cases/1m pop": "total_per_million",
+    "deaths/1m pop": "deaths_per_million",
+    "totaltests": "total_tests",
+    "tests/\n1m pop\n": "tests_per_million_pop"
+}
 
 def getRowsInScrapedData(html_tree, storage):
     # TODO: Make this column aspect dynamic since website is always changing.
-    col_order = ("region", "total_cases", "new_cases", "total_deaths", "new_deaths", "total_recovered", "active_cases", "serious_critical", "total_per_million", "deaths_per_million", "total_tests", "tests_per_million_pop", "continent")
+    # col_order = ("region", "total_cases", "new_cases", "total_deaths", "new_deaths", "total_recovered", "active_cases", "serious_critical", "total_per_million", "deaths_per_million", "total_tests", "tests_per_million_pop", "continent")
+    tbody_head = html_tree.find('div').find('table').find('thead').find('tr').findAll('th')
+    col_order = [x.text.lower() if x.text.lower() not in key_map else key_map[x.text.lower()] for x in tbody_head]
+    print(col_order)
+
     tbody_tags = html_tree.find('div').find('table').findAll('tbody')
 
     def setTableColData(row):
@@ -97,6 +115,7 @@ def get_data_world():
     return getCovidData()
 
 webScrapeData(get_yesterday=True)
+# print(live_data)
 
 # Starts scheduler
 sched = BackgroundScheduler({'apscheduler.timezone': 'America/Los_Angeles'})
