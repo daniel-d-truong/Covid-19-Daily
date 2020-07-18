@@ -13,6 +13,7 @@ key_map = {
     "country,other": "region",
     "totalcases": "total_cases",
     "newcases": "new_cases",
+    "newdeaths": "new_deaths",
     "totaldeaths": "total_deaths",
     "totalrecovered": "total_recovered",
     "newrecovered": "new_recovered",
@@ -115,7 +116,6 @@ def get_data_world():
     return getCovidData()
 
 webScrapeData(get_yesterday=True)
-# print(live_data)
 
 # Starts scheduler
 sched = BackgroundScheduler({'apscheduler.timezone': 'America/Los_Angeles'})
